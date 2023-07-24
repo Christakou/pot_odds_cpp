@@ -1,51 +1,16 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "utils.h"
+#include "algos.h"
+#include <ostream>
 
 using namespace std;
 
 
-enum Suit
-{
-    Clubs,
-    Hearts,
-    Spades,
-    Diamonds,
-};
-
-Suit AllSuits[4] = {Clubs, Hearts, Spades, Diamonds};
-
-string representRank(int input)
-{
-    string result;
-    if (input < 11)
-    {
-        result = to_string(input);
-    }
-    else
-    {
-        switch (input)
-        {
-        case 11:
-            result = "J";
-        case 12:
-            result = "Q";
-        case 13:
-            result = "K";
-        case 14:
-            result = "A";
-        default:
-            break;
-        }
-    }
-
-    return result;
-}
-
 
 template<typename T>
-void FyShuffle(vector<T>& input){
+void FyShuffle(std::vector<T>& input){
+    // Fisher-Yates shuffle algorithm implemented for a vector of any type
     for(int i = input.size()-1; i>1; i--){
         srand((unsigned int)time(NULL));
         int j = rand()%(i + 1);
@@ -54,28 +19,66 @@ void FyShuffle(vector<T>& input){
 }
 
 
+enum class Suit
+{
+    Clubs,
+    Hearts,
+    Spades,
+    Diamonds,
+};
+
+string representRank(unsigned int input)
+{
+    string result;
+    if (input < 11){
+        result = to_string(input);
+    }
+    else
+    {
+        switch (input)
+        {
+        case 11:
+            result = "J";
+            break;
+        case 12:
+            result = "Q";
+            break;
+        case 13:
+            result = "K";
+            break;
+        case 14:
+            result = "A";
+            break;
+        default:
+            throw std::runtime_error("Invalid rank");
+        }
+    }
+
+    return result;
+}
+
 string representSuit(Suit input)
 {
     string result;
     switch (input)
     {
-    case 0:
+    case Suit::Clubs:
         result = "C";
         break;
-    case Hearts:
+    case Suit::Hearts:
         result = "H";
         break;
-    case Diamonds:
+    case Suit::Diamonds:
         result = "D";
         break;
-    case Spades:
+    case Suit::Spades:
         result = "S";
         break;
+    default:
+        throw std::runtime_error("Invalid Su");
     }
     return result;
 }
-
-
 
 class Card
 {
@@ -89,31 +92,33 @@ public:
         suit = _suit;
     }
 
-
-    string Represent(){
-        return representRank(rank)+representSuit(suit);
-    }
-
-    void Print()
+    string Represent()
     {
-        cout << Represent();
+        return representRank(rank) + representSuit(suit);
     }
 
+    // overload the << operator to print a Card object
+    friend std::ostream &operator<<(std::ostream &os, const Card &obj)
+    {
+        os << representRank(obj.rank) << representSuit(obj.suit);
+        return os;
+    }
 };
-
 
 class Deque
 {
 public:
-   vector<Card> cards;
+    vector<Card> cards;
 
     Deque()
     {
         for (int i = 1; i < 15; i++)
         {
-            for (Suit suit : AllSuits)
+            for (Suit c = Suit::Clubs; c <= Suit::Hearts; c = static_cast<Suit>(static_cast<int>(c) + 1))
             {
-                cards.push_back(Card(i, suit));
+                {
+                    cards.push_back(Card(i, c));
+                }
             }
         }
     }
@@ -121,19 +126,21 @@ public:
     {
         for (Card card : cards)
         {
-           cout << ' ';
-            card.Print();
+            cout << card << ' ';
         }
     }
-    void Shuffle(){
+    void Shuffle()
+    {
         FyShuffle(cards);
     }
-    Deque Deal(int n){
+    Deque Deal(int n)
+    {
         vector<Card> dealt_hand;
         Deque return_hand = Deque();
         return_hand.cards.clear();
-        for(int i=0; i < n; i++){
-            return_hand.cards.push_back(cards[cards.size()-1]);
+        for (int i = 0; i < n; i++)
+        {
+            return_hand.cards.push_back(cards[cards.size() - 1]);
             cards.pop_back();
         }
         return return_hand;
@@ -142,9 +149,10 @@ public:
 
 
 
+
 void Log(const char *message)
 {
-   cout << message << '\n';
+    cout << message << '\n';
 }
 
 int main()
@@ -163,6 +171,6 @@ int main()
     hand.Print();
     cout << '\n';
 
-    foo();
     return 0;
 }
+
